@@ -16,7 +16,7 @@
    ```
 3. Open http://127.0.0.1:5000 in your browser
 
-## Report on Version 1 of the “Door Sheet PDF Generator”
+## Report on Version 2 of the “Door Sheet PDF Generator”
 
 1. Purpose of Version 2
 
