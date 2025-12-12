@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Door Sheet PDF Generator</title>
+		<link rel="stylesheet" href="/static/css/style.css" />
+	</head>
+<body>
+		<main class="page no-card">
+			<form method="POST" action="/generate" class="form-row">
+				<div class="hazards-col">
+					<div class="selector" id="hazard-selector">
+						<label for="hazard-search">Select hazards</label>
+						<input
+							id="hazard-search"
+							class="search-input"
+							type="text"
+							name="hazard_display"
+							placeholder="Search hazards..."
+							autocomplete="off"
+						/>
+						<div class="hazard-grid" id="hazard-grid">
+							{% for hazard in hazards %}
+							<label
+								class="hazard-pill"
+								data-label="{{ hazard.label | lower }}"
+								data-info="{{ hazard.info }}"
+							>
+								<input
+									type="checkbox"
+									name="hazards"
+									value="{{ hazard.key }}"
+								/>
+								<span class="hazard-pill-text">
+									<img src="{{ hazard.icon }}" alt="" class="hazard-thumb" />
+									<span>{{ hazard.label }}</span>
+								</span>
+								<button type="button" class="info-btn" aria-label="More info">i</button>
+							</label>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="hazards_order" id="hazards-order" value="" />
+						<p class="helper">
+							Filter by typing, then check up to four hazards to include.
+						</p>
+						<div class="error" id="hazard-error"></div>
+					</div>
+				</div>
+
+				<div class="obligations-col">
+					<div class="selector" id="obligation-selector">
+						<label for="obligation-search">Select obligations</label>
+						<input
+							id="obligation-search"
+							class="search-input"
+							type="text"
+							name="obligation_display"
+							placeholder="Search obligations..."
+							autocomplete="off"
+						/>
+						<div class="hazard-grid" id="obligation-grid">
+							{% for obligation in obligations %}
+							<label
+								class="hazard-pill"
+								data-label="{{ obligation.label | lower }}"
+							>
+								<input
+									type="checkbox"
+									name="obligations"
+									value="{{ obligation.key }}"
+								/>
+								<span class="hazard-pill-text">
+									<img src="{{ obligation.icon }}" alt="" class="hazard-thumb" />
+									<span>{{ obligation.label }}</span>
+								</span>
+							</label>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="obligations_order" id="obligations-order" value="" />
+						<p class="helper">
+							Filter by typing, then choose obligations to include (icons only).
+						</p>
+						<div class="error" id="obligation-error"></div>
+					</div>
+
+					<div class="selector" id="prohibition-selector">
+						<label for="prohibition-search">Select prohibitions</label>
+						<input
+							id="prohibition-search"
+							class="search-input"
+							type="text"
+							name="prohibition_display"
+							placeholder="Search prohibitions..."
+							autocomplete="off"
+						/>
+						<div class="hazard-grid" id="prohibition-grid">
+							{% for prohibition in prohibitions %}
+							<label
+								class="hazard-pill"
+								data-label="{{ prohibition.label | lower }}"
+							>
+								<input
+									type="checkbox"
+									name="prohibitions"
+									value="{{ prohibition.key }}"
+								/>
+								<span class="hazard-pill-text">
+									<img src="{{ prohibition.icon }}" alt="" class="hazard-thumb" />
+									<span>{{ prohibition.label }}</span>
+								</span>
+							</label>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="prohibitions_order" id="prohibitions-order" value="" />
+						<p class="helper">
+							Choose up to six obligations/prohibitions combined. Icons only.
+						</p>
+						<div class="error" id="prohibition-error"></div>
+					</div>
+				</div>
+
+				<div class="side-col">
+					<div class="risk-section" id="risk-section">
+						<p class="risk-label">Select risk</p>
+						<div class="risk-grid" id="risk-grid">
+							{% for risk in risks %}
+							<button
+								type="button"
+								class="risk-button"
+								data-risk="{{ risk.key }}"
+								data-info="{{ risk.info }}"
+							>
+								<span class="risk-info-btn">i</span>
+								<span class="risk-shape risk-{{ risk.key }}"></span>
+								<span class="risk-text">{{ risk.label }}</span>
+							</button>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="risk" id="risk-input" value="" />
+						<div class="error" id="risk-error"></div>
+					</div>
+					<button type="submit" class="generate-btn">Generate PDF</button>
+				</div>
+			</form>
+		</main>
+		<script>
+			const hazardData = {{ hazards|tojson }};
+			const obligationData = {{ obligations|tojson }};
+			const prohibitionData = {{ prohibitions|tojson }};
+			const searchInput = document.getElementById('hazard-search');
+			const hazardGrid = document.getElementById('hazard-grid');
+			const hazardError = document.getElementById('hazard-error');
+			const obligationSearch = document.getElementById('obligation-search');
+			const obligationGrid = document.getElementById('obligation-grid');
+			const obligationError = document.getElementById('obligation-error');
+			const prohibitionSearch = document.getElementById('prohibition-search');
+			const prohibitionGrid = document.getElementById('prohibition-grid');
+			const prohibitionError = document.getElementById('prohibition-error');
+			const riskError = document.getElementById('risk-error');
+			const form = document.querySelector('form');
+			const hazardCheckboxes = Array.from(document.querySelectorAll('input[name="hazards"]'));
+			const obligationCheckboxes = Array.from(document.querySelectorAll('input[name="obligations"]'));
+			const prohibitionCheckboxes = Array.from(document.querySelectorAll('input[name="prohibitions"]'));
+			const hazardsOrderInput = document.getElementById('hazards-order');
+			const obligationsOrderInput = document.getElementById('obligations-order');
+			const prohibitionsOrderInput = document.getElementById('prohibitions-order');
+			const riskInput = document.getElementById('risk-input');
+			const riskButtons = Array.from(document.querySelectorAll('.risk-button'));
+			const infoButtons = Array.from(document.querySelectorAll('.hazard-pill .info-btn, .risk-info-btn'));
+
+			// Info modal for hazards
+			const infoModal = document.createElement('div');
+			infoModal.className = 'info-modal hidden';
+			infoModal.innerHTML = `
+        <div class="info-backdrop"></div>
+        <div class="info-content">
+          <div class="info-text"></div>
+        </div>
+      `;
+			document.body.appendChild(infoModal);
+			const infoTextEl = infoModal.querySelector('.info-text');
+			const infoBackdrop = infoModal.querySelector('.info-backdrop');
+
+			function chooseRisk(riskKey) {
+			  riskInput.value = riskKey;
+			  riskButtons.forEach((btn) => {
+			    if (btn.dataset.risk === riskKey) {
+			      btn.classList.add('selected');
+			    } else {
+			      btn.classList.remove('selected');
+			    }
+			  });
+			}
+
+			riskButtons.forEach((btn) => {
+			  btn.addEventListener('click', () => chooseRisk(btn.dataset.risk));
+			});
+
+
+			function validateHazards() {
+			  const anyChecked = hazardCheckboxes.some((cb) => cb.checked);
+			  hazardError.textContent = anyChecked ? '' : 'Please select at least one hazard';
+			  return anyChecked;
+			}
+
+			function validateRisk() {
+			  const hasRisk = Boolean(riskInput.value);
+			  riskError.textContent = hasRisk ? '' : 'Please select a risk level';
+			  return hasRisk;
+			}
+
+			hazardCheckboxes.forEach((cb) => cb.addEventListener('change', validateHazards));
+
+			const selectedOrder = [];
+			hazardCheckboxes.forEach((cb) => {
+			  cb.addEventListener('change', (event) => {
+			    const val = event.target.value;
+			    if (event.target.checked) {
+			      if (selectedOrder.length >= 4) {
+			        event.target.checked = false;
+			        hazardError.textContent = 'You can select up to 4 hazards';
+			        return;
+			      }
+			      if (!selectedOrder.includes(val)) {
+			        selectedOrder.push(val);
+			      }
+			      hazardError.textContent = '';
+			    } else {
+			      const idx = selectedOrder.indexOf(val);
+			      if (idx !== -1) {
+			        selectedOrder.splice(idx, 1);
+			      }
+			    }
+			    hazardsOrderInput.value = selectedOrder.join(',');
+			  });
+			});
+
+			function openInfo(text) {
+			  infoTextEl.textContent = text || 'No additional information';
+			  infoModal.classList.remove('hidden');
+			}
+
+			function closeInfo() {
+			  infoModal.classList.add('hidden');
+			}
+
+			infoButtons.forEach((btn) => {
+			  btn.addEventListener('click', (event) => {
+			    event.preventDefault();
+			    event.stopPropagation();
+			    const info = btn.parentElement?.dataset?.info || '';
+			    openInfo(info);
+			  });
+			});
+
+			infoBackdrop.addEventListener('click', closeInfo);
+			document.addEventListener('keydown', (event) => {
+			  if (event.key === 'Escape') {
+			    closeInfo();
+			  }
+			});
+
+			const selectedObligationOrder = [];
+			const selectedProhibitionOrder = [];
+			obligationCheckboxes.forEach((cb) => {
+			  cb.addEventListener('change', (event) => {
+			    const val = event.target.value;
+			    if (event.target.checked) {
+			      if (selectedObligationOrder.length + selectedProhibitionOrder.length >= 6) {
+			        event.target.checked = false;
+			        obligationError.textContent = 'You can select up to 6 obligations';
+			        return;
+			      }
+			      obligationError.textContent = '';
+			      if (!selectedObligationOrder.includes(val)) {
+			        selectedObligationOrder.push(val);
+			      }
+			    } else {
+			      const idx = selectedObligationOrder.indexOf(val);
+			      if (idx !== -1) {
+			        selectedObligationOrder.splice(idx, 1);
+			      }
+			    }
+			    obligationsOrderInput.value = selectedObligationOrder.join(',');
+			  });
+			});
+
+			prohibitionCheckboxes.forEach((cb) => {
+			  cb.addEventListener('change', (event) => {
+			    const val = event.target.value;
+			    if (event.target.checked) {
+			      if (selectedObligationOrder.length + selectedProhibitionOrder.length >= 6) {
+			        event.target.checked = false;
+			        prohibitionError.textContent = 'You can select up to 6 total';
+			        return;
+			      }
+			      prohibitionError.textContent = '';
+			      if (!selectedProhibitionOrder.includes(val)) {
+			        selectedProhibitionOrder.push(val);
+			      }
+			    } else {
+			      const idx = selectedProhibitionOrder.indexOf(val);
+			      if (idx !== -1) {
+			        selectedProhibitionOrder.splice(idx, 1);
+			      }
+			    }
+			    prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+			  });
+			});
+
+			// Filter hazards by search term
+			searchInput.addEventListener('input', (event) => {
+			  const term = event.target.value.toLowerCase();
+			  Array.from(hazardGrid.querySelectorAll('.hazard-pill')).forEach((pill) => {
+			    const label = pill.dataset.label || '';
+			    pill.style.display = label.includes(term) ? 'flex' : 'none';
+			  });
+			});
+
+			obligationSearch.addEventListener('input', (event) => {
+			  const term = event.target.value.toLowerCase();
+			  Array.from(obligationGrid.querySelectorAll('.hazard-pill')).forEach((pill) => {
+			    const label = pill.dataset.label || '';
+			    pill.style.display = label.includes(term) ? 'flex' : 'none';
+			  });
+			});
+
+			prohibitionSearch.addEventListener('input', (event) => {
+			  const term = event.target.value.toLowerCase();
+			  Array.from(prohibitionGrid.querySelectorAll('.hazard-pill')).forEach((pill) => {
+			    const label = pill.dataset.label || '';
+			    pill.style.display = label.includes(term) ? 'flex' : 'none';
+			  });
+			});
+
+			form.addEventListener('submit', (event) => {
+			  const okHazard = validateHazards();
+			  const okRisk = validateRisk();
+			  hazardsOrderInput.value = selectedOrder.join(',');
+			  obligationsOrderInput.value = selectedObligationOrder.join(',');
+			  prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+			  if (!okHazard || !okRisk) {
+			    event.preventDefault();
+			  }
+			});
+
+			if (!hazardData.length) {
+			  searchInput.placeholder = 'No hazards configured';
+			}
+			if (!obligationData.length) {
+			  obligationSearch.placeholder = 'No obligations configured';
+			}
+			if (!prohibitionData.length) {
+			  prohibitionSearch.placeholder = 'No prohibitions configured';
+			}
+		</script>
+	</body>
+</html>
