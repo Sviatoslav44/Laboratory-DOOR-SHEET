@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Door Sheet PDF Generator</title>
+		<link rel="stylesheet" href="/static/css/style.css" />
+	</head>
+	<body>
+		<main class="page">
+			<section class="card-full">
+				<form method="POST" action="/generate" class="single-form">
+					<div class="research-section">
+						<div class="research-row">
+							<span class="research-label">Research group count</span>
+							<div class="segmented" id="research-segmented">
+								<button type="button" data-value="1">1</button>
+								<button type="button" data-value="2">2</button>
+								<button type="button" data-value="3" class="active">3</button>
+							</div>
+							<input
+								type="hidden"
+								name="research_count"
+								id="research-count"
+								value="3"
+							/>
+						</div>
+						<div class="research-and-room">
+							<div class="research-inputs" id="research-inputs"></div>
+							<div class="room-row">
+								<label for="room-number">Room Number</label>
+								<input
+									id="room-number"
+									name="room_number"
+									type="text"
+									class="research-input room-input"
+									placeholder="Enter room number"
+								/>
+							</div>
+						</div>
+						<div class="contacts-grid">
+							<div class="contacts-panel">
+								<h4>Laboratory contacts</h4>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="pi-name">Laboratory PI</label>
+										<input
+											id="pi-name"
+											name="pi_name"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="pi-phone">Tel. internal</label>
+										<input
+											id="pi-phone"
+											name="pi_phone"
+											type="text"
+											class="research-input"
+											placeholder="Phone"
+										/>
+									</div>
+								</div>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="safety-name">Lab safety coordinator</label>
+										<input
+											id="safety-name"
+											name="safety_name"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="safety-phone">Tel. internal</label>
+										<input
+											id="safety-phone"
+											name="safety_phone"
+											type="text"
+											class="research-input"
+											placeholder="Phone"
+										/>
+									</div>
+								</div>
+							</div>
+							<div class="contacts-panel">
+								<h4>Emergency contacts</h4>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="emergency-name-1">Emergency contact 1</label>
+										<input
+											id="emergency-name-1"
+											name="emergency_name_1"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="emergency-phone-1">Tel. internal</label>
+										<input
+											id="emergency-phone-1"
+											name="emergency_phone_1"
+											type="text"
+											class="research-input"
+											placeholder="Phone"
+										/>
+									</div>
+								</div>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="emergency-name-2">Emergency contact 2</label>
+										<input
+											id="emergency-name-2"
+											name="emergency_name_2"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="emergency-phone-2">Tel. internal</label>
+										<input
+											id="emergency-phone-2"
+											name="emergency_phone_2"
+											type="text"
+											class="research-input"
+											placeholder="Phone"
+										/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="activity-row">
+							<div class="activity-field">
+								<label for="activity-type">Type of activity</label>
+								<input
+									id="activity-type"
+									name="activity_type"
+									type="text"
+									class="research-input"
+									placeholder="Enter activity type"
+								/>
+							</div>
+							<div class="activity-field">
+								<label for="activity-hazard">Hazard class</label>
+								<input
+									id="activity-hazard"
+									name="activity_hazard"
+									type="text"
+									class="research-input"
+									placeholder="Enter hazard class"
+								/>
+							</div>
+						</div>
+					</div>
+					<div class="select-row">
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="hazard-modal"
+						>
+							Select hazards
+						</button>
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="obligation-modal"
+						>
+							Select obligations
+						</button>
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="prohibition-modal"
+						>
+							Select prohibitions
+						</button>
+					</div>
+					<input
+						type="hidden"
+						name="hazards_order"
+						id="hazards-order"
+						value=""
+					/>
+					<input
+						type="hidden"
+						name="obligations_order"
+						id="obligations-order"
+						value=""
+					/>
+					<input
+						type="hidden"
+						name="prohibitions_order"
+						id="prohibitions-order"
+						value=""
+					/>
+
+					<div class="risk-section" id="risk-section">
+						<div class="risk-row" id="risk-grid">
+							{% for risk in risks %}
+							<button
+								type="button"
+								class="risk-button"
+								data-risk="{{ risk.key }}"
+								data-info="{{ risk.info }}"
+								data-label="{{ risk.label }}"
+								data-title="{{ risk.title }}"
+								data-shape="risk-{{ risk.key }}"
+							>
+								<span class="risk-info-btn">i</span>
+								<span class="risk-shape risk-{{ risk.key }}"></span>
+								<span class="risk-text">{{ risk.label }}</span>
+							</button>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="risk" id="risk-input" value="" />
+						<div class="error" id="risk-error"></div>
+					</div>
+					<div class="actions">
+						<button type="submit" class="generate-btn">Generate PDF</button>
+					</div>
+				</form>
+			</section>
+		</main>
+
+		<!-- Hazard modal -->
+		<div class="select-modal hidden" id="hazard-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Hazards</h3>
+					<button type="button" class="close-modal" data-target="hazard-modal">
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="hazard-modal-error"></div>
+				<input
+					id="hazard-search"
+					class="search-input"
+					type="text"
+					name="hazard_display"
+					placeholder="Search hazards..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="hazard-grid">
+					{% for hazard in hazards %}
+					<label
+						class="hazard-pill"
+						data-label="{{ hazard.label | lower }}"
+						data-info="{{ hazard.info }}"
+						data-icon="{{ hazard.icon }}"
+						data-title="{{ hazard.label }}"
+					>
+						<input type="checkbox" name="hazards" value="{{ hazard.key }}" />
+						<span class="hazard-pill-text">
+							<img src="{{ hazard.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ hazard.label }}</span>
+						</span>
+						<button type="button" class="info-btn" aria-label="More info">
+							i
+						</button>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Obligation modal -->
+		<div class="select-modal hidden" id="obligation-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Obligation signs</h3>
+					<button
+						type="button"
+						class="close-modal"
+						data-target="obligation-modal"
+					>
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="obligation-modal-error"></div>
+				<input
+					id="obligation-search"
+					class="search-input"
+					type="text"
+					name="obligation_display"
+					placeholder="Search obligations..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="obligation-grid">
+					{% for obligation in obligations %}
+					<label
+						class="hazard-pill"
+						data-label="{{ obligation.label | lower }}"
+					>
+						<input
+							type="checkbox"
+							name="obligations"
+							value="{{ obligation.key }}"
+						/>
+						<span class="hazard-pill-text">
+							<img src="{{ obligation.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ obligation.label }}</span>
+						</span>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Prohibition modal -->
+		<div class="select-modal hidden" id="prohibition-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Prohibition signs</h3>
+					<button
+						type="button"
+						class="close-modal"
+						data-target="prohibition-modal"
+					>
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="prohibition-modal-error"></div>
+				<input
+					id="prohibition-search"
+					class="search-input"
+					type="text"
+					name="prohibition_display"
+					placeholder="Search prohibitions..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="prohibition-grid">
+					{% for prohibition in prohibitions %}
+					<label
+						class="hazard-pill"
+						data-label="{{ prohibition.label | lower }}"
+					>
+						<input
+							type="checkbox"
+							name="prohibitions"
+							value="{{ prohibition.key }}"
+						/>
+						<span class="hazard-pill-text">
+							<img src="{{ prohibition.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ prohibition.label }}</span>
+						</span>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<script>
+			const hazardData = {{ hazards|tojson }};
+			const obligationData = {{ obligations|tojson }};
+			const prohibitionData = {{ prohibitions|tojson }};
+
+			// Form + inputs
+			const form = document.querySelector('form');
+			const hazardCheckboxes = Array.from(document.querySelectorAll('input[name="hazards"]'));
+			const obligationCheckboxes = Array.from(document.querySelectorAll('input[name="obligations"]'));
+			const prohibitionCheckboxes = Array.from(document.querySelectorAll('input[name="prohibitions"]'));
+			const hazardsOrderInput = document.getElementById('hazards-order');
+			const obligationsOrderInput = document.getElementById('obligations-order');
+			const prohibitionsOrderInput = document.getElementById('prohibitions-order');
+			const riskInput = document.getElementById('risk-input');
+			const riskButtons = Array.from(document.querySelectorAll('.risk-button'));
+			const infoButtons = Array.from(
+				document.querySelectorAll('.hazard-pill .info-btn, .risk-info-btn')
+			);
+			const searchInput = document.getElementById('hazard-search');
+			const hazardGrid = document.getElementById('hazard-grid');
+			const hazardModalError = document.getElementById('hazard-modal-error');
+			const obligationSearch = document.getElementById('obligation-search');
+			const obligationGrid = document.getElementById('obligation-grid');
+			const obligationModalError = document.getElementById('obligation-modal-error');
+			const prohibitionSearch = document.getElementById('prohibition-search');
+			const prohibitionGrid = document.getElementById('prohibition-grid');
+			const prohibitionModalError = document.getElementById('prohibition-modal-error');
+			const riskError = document.getElementById('risk-error');
+			const researchSelect = document.getElementById('research-count');
+			const researchSegmented = document.getElementById('research-segmented');
+			const researchInputsWrap = document.getElementById('research-inputs');
+			const phoneInputs = Array.from(
+				document.querySelectorAll(
+					'#pi-phone, #safety-phone, #emergency-phone-1, #emergency-phone-2'
+				)
+			);
+
+			// Info modal (shared)
+			const infoModal = document.createElement('div');
+			infoModal.className = 'info-modal hidden';
+			infoModal.innerHTML = `
+        <div class="info-backdrop"></div>
+        <div class="info-content">
+          <div class="info-body">
+            <div class="info-left">
+              <div class="info-visual"></div>
+              <div class="info-title"></div>
+            </div>
+            <div class="info-text"></div>
+          </div>
+          <button type="button" class="info-close" aria-label="Close">×</button>
+        </div>
+      `;
+			document.body.appendChild(infoModal);
+			const infoBackdrop = infoModal.querySelector('.info-backdrop');
+			const infoTextEl = infoModal.querySelector('.info-text');
+			const infoVisual = infoModal.querySelector('.info-visual');
+			const infoTitleEl = infoModal.querySelector('.info-title');
+			const infoClose = infoModal.querySelector('.info-close');
+
+			function openInfo({ text, icon, title, shape }) {
+				infoTextEl.textContent = text || 'No additional information';
+				infoTitleEl.textContent = title || '';
+				infoVisual.innerHTML = '';
+				if (icon) {
+					const img = document.createElement('img');
+					img.src = icon;
+					img.alt = title || 'icon';
+					infoVisual.appendChild(img);
+				} else if (shape) {
+					const span = document.createElement('span');
+					span.className = `risk-shape ${shape}`;
+					infoVisual.appendChild(span);
+				}
+				infoModal.classList.remove('hidden');
+			}
+
+			function closeInfo() {
+				infoModal.classList.add('hidden');
+			}
+
+			infoButtons.forEach((btn) => {
+				btn.addEventListener('click', (event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					const parent =
+						btn.closest('.hazard-pill') || btn.closest('.risk-button');
+					const info = parent?.dataset?.info || '';
+					const icon = parent?.dataset?.icon || '';
+					const title = parent?.dataset?.title || parent?.dataset?.label || '';
+					const shape = parent?.dataset?.shape || '';
+					openInfo({ text: info, icon, title, shape });
+				});
+			});
+			infoBackdrop.addEventListener('click', closeInfo);
+			infoClose.addEventListener('click', closeInfo);
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') closeInfo();
+			});
+
+			// Risk selection
+			function chooseRisk(riskKey) {
+				riskInput.value = riskKey;
+				riskButtons.forEach((btn) => {
+					btn.classList.toggle('selected', btn.dataset.risk === riskKey);
+				});
+			}
+			riskButtons.forEach((btn) => {
+				btn.addEventListener('click', () => chooseRisk(btn.dataset.risk));
+			});
+
+			// Hazards max 4 with order
+			const selectedHazardsOrder = [];
+			function validateHazards() {
+				hazardModalError.textContent = '';
+				return true;
+			}
+			hazardCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					if (event.target.checked) {
+						if (selectedHazardsOrder.length >= 4) {
+							event.target.checked = false;
+							hazardModalError.textContent = 'You can select up to 4 hazards';
+							return;
+						}
+						hazardModalError.textContent = '';
+						if (!selectedHazardsOrder.includes(val)) {
+							selectedHazardsOrder.push(val);
+						}
+					} else {
+						const idx = selectedHazardsOrder.indexOf(val);
+						if (idx !== -1) selectedHazardsOrder.splice(idx, 1);
+					}
+					hazardsOrderInput.value = selectedHazardsOrder.join(',');
+				})
+			);
+
+			// Obligations / Prohibitions max 6 combined
+			const selectedObligationOrder = [];
+			const selectedProhibitionOrder = [];
+			obligationCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					const currentOb = selectedObligationOrder.length;
+					const currentPro = selectedProhibitionOrder.length;
+					if (event.target.checked) {
+						if (currentOb >= 6) {
+							event.target.checked = false;
+							obligationModalError.textContent =
+								'You can select up to 6 obligations';
+							return;
+						}
+						if (currentOb + currentPro >= 6) {
+							event.target.checked = false;
+							obligationModalError.textContent =
+								'You can select up to 6 obligations and prohibitions combined';
+							return;
+						}
+						obligationModalError.textContent = '';
+						if (!selectedObligationOrder.includes(val)) {
+							selectedObligationOrder.push(val);
+							if (selectedObligationOrder.length === 6) {
+								obligationModalError.textContent =
+									'You can select up to 6 obligations';
+							}
+						}
+					} else {
+						const idx = selectedObligationOrder.indexOf(val);
+						if (idx !== -1) selectedObligationOrder.splice(idx, 1);
+						if (selectedObligationOrder.length < 6) {
+							obligationModalError.textContent = '';
+						}
+					}
+					obligationsOrderInput.value = selectedObligationOrder.join(',');
+				})
+			);
+
+			prohibitionCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					const currentOb = selectedObligationOrder.length;
+					const currentPro = selectedProhibitionOrder.length;
+					if (event.target.checked) {
+						if (currentPro >= 6) {
+							event.target.checked = false;
+							prohibitionModalError.textContent =
+								'You can select up to 6 prohibitions';
+							return;
+						}
+						if (currentOb + currentPro >= 6) {
+							event.target.checked = false;
+							prohibitionModalError.textContent =
+								'You can select up to 6 obligations and prohibitions combined';
+							return;
+						}
+						prohibitionModalError.textContent = '';
+						if (!selectedProhibitionOrder.includes(val)) {
+							selectedProhibitionOrder.push(val);
+							if (selectedProhibitionOrder.length === 6) {
+								prohibitionModalError.textContent =
+									'You can select up to 6 prohibitions';
+							}
+						}
+					} else {
+						const idx = selectedProhibitionOrder.indexOf(val);
+						if (idx !== -1) selectedProhibitionOrder.splice(idx, 1);
+						if (selectedProhibitionOrder.length < 6) {
+							prohibitionModalError.textContent = '';
+						}
+					}
+					prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+				})
+			);
+
+			// Search filters
+			searchInput.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(hazardGrid.querySelectorAll('.hazard-pill')).forEach((pill) => {
+					const label = pill.dataset.label || '';
+					pill.style.display = label.includes(term) ? 'flex' : 'none';
+				});
+			});
+			obligationSearch.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(obligationGrid.querySelectorAll('.hazard-pill')).forEach(
+					(pill) => {
+						const label = pill.dataset.label || '';
+						pill.style.display = label.includes(term) ? 'flex' : 'none';
+					}
+				);
+			});
+			prohibitionSearch.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(prohibitionGrid.querySelectorAll('.hazard-pill')).forEach(
+					(pill) => {
+						const label = pill.dataset.label || '';
+						pill.style.display = label.includes(term) ? 'flex' : 'none';
+					}
+				);
+			});
+
+			// Risk validation (hazards allowed empty)
+			function validateRisk() {
+				const hasRisk = Boolean(riskInput.value);
+				riskError.textContent = hasRisk ? '' : 'Please select a risk level';
+				return hasRisk;
+			}
+			hazardCheckboxes.forEach((cb) => cb.addEventListener('change', validateHazards));
+
+			form.addEventListener('submit', (event) => {
+				const okHazard = validateHazards();
+				const okRisk = validateRisk();
+				hazardsOrderInput.value = selectedHazardsOrder.join(',');
+				obligationsOrderInput.value = selectedObligationOrder.join(',');
+				prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+				if (!okHazard || !okRisk) event.preventDefault();
+			});
+
+			// Empty states
+			if (!hazardData.length) searchInput.placeholder = 'No hazards configured';
+			if (!obligationData.length)
+				obligationSearch.placeholder = 'No obligations configured';
+			if (!prohibitionData.length)
+				prohibitionSearch.placeholder = 'No prohibitions configured';
+
+			// Research groups dynamic inputs
+			function renderResearchInputs() {
+				const count = parseInt(researchSelect.value, 10) || 0;
+				researchInputsWrap.innerHTML = '';
+				for (let i = 0; i < count; i += 1) {
+					const input = document.createElement('input');
+					input.type = 'text';
+					input.name = 'research_names';
+					input.placeholder = `Research group ${i + 1} name`;
+					input.className = 'research-input';
+					researchInputsWrap.appendChild(input);
+				}
+			}
+			function setResearchCount(val) {
+				researchSelect.value = String(val);
+				renderResearchInputs();
+			}
+			if (researchSegmented) {
+				researchSegmented.querySelectorAll('button').forEach((btn) => {
+					btn.addEventListener('click', () => {
+						researchSegmented
+							.querySelectorAll('button')
+							.forEach((b) => b.classList.remove('active'));
+						btn.classList.add('active');
+						setResearchCount(btn.dataset.value || '1');
+					});
+				});
+			}
+			setResearchCount(researchSelect.value || '3');
+
+			// Phone formatting
+			function formatPhone(value) {
+				const digits = (value || '').replace(/\D/g, '').slice(0, 10);
+				const parts = [];
+				if (digits.length > 0) parts.push(digits.slice(0, 2));
+				if (digits.length > 2) parts.push(digits.slice(2, 4));
+				if (digits.length > 4) parts.push(digits.slice(4, 6));
+				if (digits.length > 6) parts.push(digits.slice(6, 10));
+				return parts.filter(Boolean).join(' ');
+			}
+			phoneInputs.forEach((input) => {
+				input.addEventListener('input', (e) => {
+					const formatted = formatPhone(e.target.value);
+					e.target.value = formatted;
+					const end = formatted.length;
+					e.target.setSelectionRange(end, end);
+				});
+			});
+
+			// Modal open/close handlers
+			function clearModalErrors() {
+				hazardModalError.textContent = '';
+				obligationModalError.textContent = '';
+				prohibitionModalError.textContent = '';
+			}
+			const modalMap = {
+				'hazard-modal': document.getElementById('hazard-modal'),
+				'obligation-modal': document.getElementById('obligation-modal'),
+				'prohibition-modal': document.getElementById('prohibition-modal'),
+			};
+
+			document.querySelectorAll('.open-modal-btn').forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const target = btn.dataset.target;
+					const modal = modalMap[target];
+					if (modal) {
+						clearModalErrors();
+						modal.classList.remove('hidden');
+					}
+				});
+			});
+
+			document.querySelectorAll('.close-modal').forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const target = btn.dataset.target;
+					const modal = modalMap[target];
+					if (modal) modal.classList.add('hidden');
+				});
+			});
+
+			Object.values(modalMap).forEach((modal) => {
+				modal
+					?.querySelector('.select-modal__backdrop')
+					?.addEventListener('click', () => modal.classList.add('hidden'));
+			});
+		</script>
+	</body>
+</html>
