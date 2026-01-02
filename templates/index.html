@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Door Sheet PDF Generator</title>
+		<link rel="stylesheet" href="/static/css/style.css" />
+	</head>
+	<body>
+		<main class="page">
+			<div class="top-bar">
+				<button type="button" class="theme-toggle" id="theme-toggle">
+					<span class="theme-icon" aria-hidden="true">
+						<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="5"></circle>
+							<line x1="12" y1="1" x2="12" y2="3"></line>
+							<line x1="12" y1="21" x2="12" y2="23"></line>
+							<line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+							<line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+							<line x1="1" y1="12" x2="3" y2="12"></line>
+							<line x1="21" y1="12" x2="23" y2="12"></line>
+							<line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+							<line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+						</svg>
+					</span>
+				</button>
+			</div>
+			<div class="progress-shell">
+				<div class="progress-track">
+					<div class="progress-fill" id="form-progress-fill"></div>
+				</div>
+			</div>
+			<section class="card-full">
+				<form method="POST" action="/generate" class="single-form">
+					<div class="department-section">
+						<label class="department-label" for="department-input"
+							>Department</label
+						>
+						<div class="department-field">
+							<div class="department-input-wrap">
+								<input
+									type="text"
+									id="department-input"
+									name="department"
+									class="department-input"
+									placeholder="Enter department"
+									autocomplete="off"
+									role="combobox"
+									aria-autocomplete="list"
+									aria-haspopup="listbox"
+									aria-expanded="false"
+									aria-controls="department-dropdown"
+								/>
+							</div>
+							<div
+								class="department-dropdown"
+								id="department-dropdown"
+								role="listbox"
+								aria-label="Department suggestions"
+							>
+								<button
+									type="button"
+									class="department-option"
+									role="option"
+									data-value="Department of Engineering"
+								>
+									Department of Engineering
+								</button>
+								<button
+									type="button"
+									class="department-option"
+									role="option"
+									data-value="Department of Computer Science"
+								>
+									Department of Computer Science
+								</button>
+								<button
+									type="button"
+									class="department-option"
+									role="option"
+									data-value="Department of Life Sciences and Medicine"
+								>
+									Department of Life Sciences and Medicine
+								</button>
+								<button
+									type="button"
+									class="department-option"
+									role="option"
+									data-value="Department of Mathematics"
+								>
+									Department of Mathematics
+								</button>
+								<button
+									type="button"
+									class="department-option"
+									role="option"
+									data-value="Department of Physics and Materials Science"
+								>
+									Department of Physics and Materials Science
+								</button>
+								<div class="department-empty is-hidden">No matches</div>
+							</div>
+						</div>
+					</div>
+					<div class="research-section">
+						<div class="research-row">
+							<span class="research-label">Research group count</span>
+							<div class="segmented" id="research-segmented">
+								<button type="button" data-value="1">1</button>
+								<button type="button" data-value="2">2</button>
+								<button type="button" data-value="3" class="active">3</button>
+							</div>
+							<input
+								type="hidden"
+								name="research_count"
+								id="research-count"
+								value="3"
+							/>
+						</div>
+						<div class="research-and-room">
+							<div class="research-inputs" id="research-inputs"></div>
+							<div class="room-row">
+								<label for="room-number">Room Number</label>
+								<div class="room-input-wrap">
+									<input
+										id="room-number"
+										name="room_number"
+										type="text"
+										class="research-input room-input"
+										placeholder="Enter room number"
+										autocomplete="off"
+										role="combobox"
+										aria-autocomplete="list"
+										aria-haspopup="listbox"
+										aria-expanded="false"
+										aria-controls="room-dropdown"
+									/>
+								</div>
+								<div
+									class="room-dropdown"
+									id="room-dropdown"
+									role="listbox"
+									aria-label="Room number suggestions"
+								>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-01"
+									>
+										BSC-S01-01
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-02"
+									>
+										BSC-S01-02
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-07"
+									>
+										BSC-S01-07
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-08"
+									>
+										BSC-S01-08
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-15"
+									>
+										BSC-S01-15
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-18A"
+									>
+										BSC-S01-18A
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-18B"
+									>
+										BSC-S01-18B
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-18C"
+									>
+										BSC-S01-18C
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-18D"
+									>
+										BSC-S01-18D
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-19"
+									>
+										BSC-S01-19
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-21"
+									>
+										BSC-S01-21
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-22"
+									>
+										BSC-S01-22
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-23"
+									>
+										BSC-S01-23
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-S01-24"
+									>
+										BSC-S01-24
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E01-05"
+									>
+										BSC-E01-05
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E01-10A"
+									>
+										BSC-E01-10A
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E01-11"
+									>
+										BSC-E01-11
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E01-12"
+									>
+										BSC-E01-12
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E01-16"
+									>
+										BSC-E01-16
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-10A"
+									>
+										BSC-E02-10A
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-10B"
+									>
+										BSC-E02-10B
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-11"
+									>
+										BSC-E02-11
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-12"
+									>
+										BSC-E02-12
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-13"
+									>
+										BSC-E02-13
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-16"
+									>
+										BSC-E02-16
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-18"
+									>
+										BSC-E02-18
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-19"
+									>
+										BSC-E02-19
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-20"
+									>
+										BSC-E02-20
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-21"
+									>
+										BSC-E02-21
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E02-22"
+									>
+										BSC-E02-22
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-05"
+									>
+										BSC-E03-05
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-09"
+									>
+										BSC-E03-09
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-10"
+									>
+										BSC-E03-10
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-11"
+									>
+										BSC-E03-11
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-12"
+									>
+										BSC-E03-12
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-14"
+									>
+										BSC-E03-14
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-15"
+									>
+										BSC-E03-15
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-17"
+									>
+										BSC-E03-17
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-18"
+									>
+										BSC-E03-18
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E03-21"
+									>
+										BSC-E03-21
+									</button>
+									<button
+										type="button"
+										class="room-option"
+										role="option"
+										data-value="BSC-E04-04"
+									>
+										BSC-E04-04
+									</button>
+									<div class="room-empty is-hidden">No matches</div>
+								</div>
+							</div>
+						</div>
+						<div class="contacts-grid">
+							<div class="contacts-panel">
+								<h4>Laboratory contacts</h4>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="pi-name">Laboratory PI</label>
+										<input
+											id="pi-name"
+											name="pi_name"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="pi-phone">Tel. internal</label>
+										<input
+										id="pi-phone"
+										name="pi_phone"
+										type="text"
+										class="research-input"
+										placeholder="Phone"
+										value="46 66 44 "
+									/>
+								</div>
+							</div>
+							<div class="contacts-row">
+								<div class="contact-field">
+										<label for="safety-name">Lab safety coordinator</label>
+										<input
+											id="safety-name"
+											name="safety_name"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="safety-phone">Tel. internal</label>
+										<input
+										id="safety-phone"
+										name="safety_phone"
+										type="text"
+										class="research-input"
+										placeholder="Phone"
+										value="46 66 44 "
+									/>
+								</div>
+							</div>
+						</div>
+						<div class="contacts-panel">
+								<h4>Emergency contacts</h4>
+								<div class="contacts-row">
+									<div class="contact-field">
+										<label for="emergency-name-1">Emergency contact 1</label>
+										<input
+											id="emergency-name-1"
+											name="emergency_name_1"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="emergency-phone-1">Tel. internal</label>
+										<input
+										id="emergency-phone-1"
+										name="emergency_phone_1"
+										type="text"
+										class="research-input"
+										placeholder="Phone"
+										value="46 66 44 "
+									/>
+								</div>
+							</div>
+							<div class="contacts-row">
+								<div class="contact-field">
+										<label for="emergency-name-2">Emergency contact 2</label>
+										<input
+											id="emergency-name-2"
+											name="emergency_name_2"
+											type="text"
+											class="research-input"
+											placeholder="Name"
+										/>
+									</div>
+									<div class="contact-field">
+										<label for="emergency-phone-2">Tel. internal</label>
+										<input
+										id="emergency-phone-2"
+										name="emergency_phone_2"
+										type="text"
+										class="research-input"
+										placeholder="Phone"
+										value="46 66 44 "
+									/>
+								</div>
+							</div>
+						</div>
+					</div>
+						<div class="activity-row">
+							<div class="activity-field">
+								<label for="activity-type">Type of activity</label>
+								<input
+									id="activity-type"
+									name="activity_type"
+									type="text"
+									class="research-input"
+									placeholder="Enter activity type"
+								/>
+							</div>
+							<div class="activity-field">
+								<label for="activity-hazard">Hazard class</label>
+								<input
+									id="activity-hazard"
+									name="activity_hazard"
+									type="text"
+									class="research-input"
+									placeholder="Enter hazard class"
+								/>
+							</div>
+						</div>
+					</div>
+					<div class="select-row">
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="hazard-modal"
+						>
+							Select hazards
+						</button>
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="obligation-modal"
+						>
+							Select obligations
+						</button>
+						<button
+							type="button"
+							class="open-modal-btn"
+							data-target="prohibition-modal"
+						>
+							Select prohibitions
+						</button>
+					</div>
+					<input
+						type="hidden"
+						name="hazards_order"
+						id="hazards-order"
+						value=""
+					/>
+					<input
+						type="hidden"
+						name="obligations_order"
+						id="obligations-order"
+						value=""
+					/>
+					<input
+						type="hidden"
+						name="prohibitions_order"
+						id="prohibitions-order"
+						value=""
+					/>
+
+					<div class="risk-section" id="risk-section">
+						<div class="risk-row" id="risk-grid">
+							{% for risk in risks %}
+							<button
+								type="button"
+								class="risk-button"
+								data-risk="{{ risk.key }}"
+								data-info="{{ risk.info }}"
+								data-label="{{ risk.label }}"
+								data-title="{{ risk.title }}"
+								data-shape="risk-{{ risk.key }}"
+							>
+								<span class="risk-info-btn">i</span>
+								<span class="risk-shape risk-{{ risk.key }}"></span>
+								<span class="risk-text">{{ risk.label }}</span>
+							</button>
+							{% endfor %}
+						</div>
+						<input type="hidden" name="risk" id="risk-input" value="" />
+						<div class="error" id="risk-error"></div>
+					</div>
+					<div class="actions">
+						<button type="submit" class="generate-btn">Generate PDF</button>
+					</div>
+				</form>
+			</section>
+		</main>
+
+		<!-- Hazard modal -->
+		<div class="select-modal hidden" id="hazard-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Hazards</h3>
+					<button type="button" class="close-modal" data-target="hazard-modal">
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="hazard-modal-error"></div>
+				<input
+					id="hazard-search"
+					class="search-input"
+					type="text"
+					name="hazard_display"
+					placeholder="Search hazards..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="hazard-grid">
+					{% for hazard in hazards %}
+					<label
+						class="hazard-pill"
+						data-label="{{ hazard.label | lower }}"
+						data-info="{{ hazard.info }}"
+						data-icon="{{ hazard.icon }}"
+						data-title="{{ hazard.label }}"
+					>
+						<input type="checkbox" name="hazards" value="{{ hazard.key }}" />
+						<span class="hazard-pill-text">
+							<img src="{{ hazard.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ hazard.label }}</span>
+						</span>
+						<button type="button" class="info-btn" aria-label="More info">
+							i
+						</button>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Obligation modal -->
+		<div class="select-modal hidden" id="obligation-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Obligation signs</h3>
+					<button
+						type="button"
+						class="close-modal"
+						data-target="obligation-modal"
+					>
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="obligation-modal-error"></div>
+				<input
+					id="obligation-search"
+					class="search-input"
+					type="text"
+					name="obligation_display"
+					placeholder="Search obligations..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="obligation-grid">
+					{% for obligation in obligations %}
+					<label
+						class="hazard-pill"
+						data-label="{{ obligation.label | lower }}"
+					>
+						<input
+							type="checkbox"
+							name="obligations"
+							value="{{ obligation.key }}"
+						/>
+						<span class="hazard-pill-text">
+							<img src="{{ obligation.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ obligation.label }}</span>
+						</span>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+
+		<!-- Prohibition modal -->
+		<div class="select-modal hidden" id="prohibition-modal">
+			<div class="select-modal__backdrop"></div>
+			<div class="select-modal__content">
+				<div class="select-modal__header">
+					<h3>Prohibition signs</h3>
+					<button
+						type="button"
+						class="close-modal"
+						data-target="prohibition-modal"
+					>
+						×
+					</button>
+				</div>
+				<div class="modal-error" id="prohibition-modal-error"></div>
+				<input
+					id="prohibition-search"
+					class="search-input"
+					type="text"
+					name="prohibition_display"
+					placeholder="Search prohibitions..."
+					autocomplete="off"
+				/>
+				<div class="hazard-grid" id="prohibition-grid">
+					{% for prohibition in prohibitions %}
+					<label
+						class="hazard-pill"
+						data-label="{{ prohibition.label | lower }}"
+					>
+						<input
+							type="checkbox"
+							name="prohibitions"
+							value="{{ prohibition.key }}"
+						/>
+						<span class="hazard-pill-text">
+							<img src="{{ prohibition.icon }}" alt="" class="hazard-thumb" />
+							<span>{{ prohibition.label }}</span>
+						</span>
+					</label>
+					{% endfor %}
+				</div>
+			</div>
+		</div>
+		<script>
+			const hazardData = {{ hazards|tojson }};
+			const obligationData = {{ obligations|tojson }};
+			const prohibitionData = {{ prohibitions|tojson }};
+
+			// Form + inputs
+			const form = document.querySelector('form');
+			const hazardCheckboxes = Array.from(document.querySelectorAll('input[name="hazards"]'));
+			const obligationCheckboxes = Array.from(document.querySelectorAll('input[name="obligations"]'));
+			const prohibitionCheckboxes = Array.from(document.querySelectorAll('input[name="prohibitions"]'));
+			const hazardsOrderInput = document.getElementById('hazards-order');
+			const obligationsOrderInput = document.getElementById('obligations-order');
+			const prohibitionsOrderInput = document.getElementById('prohibitions-order');
+			const riskInput = document.getElementById('risk-input');
+			const riskButtons = Array.from(document.querySelectorAll('.risk-button'));
+			const infoButtons = Array.from(
+				document.querySelectorAll('.hazard-pill .info-btn, .risk-info-btn')
+			);
+			const searchInput = document.getElementById('hazard-search');
+			const hazardGrid = document.getElementById('hazard-grid');
+			const hazardModalError = document.getElementById('hazard-modal-error');
+			const obligationSearch = document.getElementById('obligation-search');
+			const obligationGrid = document.getElementById('obligation-grid');
+			const obligationModalError = document.getElementById('obligation-modal-error');
+			const prohibitionSearch = document.getElementById('prohibition-search');
+			const prohibitionGrid = document.getElementById('prohibition-grid');
+			const prohibitionModalError = document.getElementById('prohibition-modal-error');
+			const riskError = document.getElementById('risk-error');
+			const researchSelect = document.getElementById('research-count');
+			const researchSegmented = document.getElementById('research-segmented');
+			const researchInputsWrap = document.getElementById('research-inputs');
+			const phoneInputs = Array.from(
+				document.querySelectorAll(
+					'#pi-phone, #safety-phone, #emergency-phone-1, #emergency-phone-2'
+				)
+			);
+			const phoneInputIds = new Set(phoneInputs.map((input) => input.id));
+			const departmentInput = document.getElementById('department-input');
+			const departmentField = departmentInput?.closest('.department-field');
+			const departmentDropdown = document.getElementById('department-dropdown');
+			const departmentOptions = departmentDropdown
+				? Array.from(departmentDropdown.querySelectorAll('.department-option'))
+				: [];
+			const departmentEmpty = departmentDropdown?.querySelector('.department-empty');
+			const roomInput = document.getElementById('room-number');
+			const roomRow = roomInput?.closest('.room-row');
+			const roomDropdown = document.getElementById('room-dropdown');
+			const roomOptions = roomDropdown
+				? Array.from(roomDropdown.querySelectorAll('.room-option'))
+				: [];
+			const roomEmpty = roomDropdown?.querySelector('.room-empty');
+			const progressFill = document.getElementById('form-progress-fill');
+			const getTextInputs = () =>
+				Array.from(form.querySelectorAll('input')).filter((input) =>
+					input.type === 'text' && !phoneInputIds.has(input.id)
+				);
+
+			// Each text input contributes equally; hazards/obligations/prohibitions contribute once when any item is chosen.
+
+			function getFormState() {
+				const textInputs = getTextInputs();
+				return {
+					textValues: textInputs.map((input) => input.value || ''),
+					hazardsSelected: hazardCheckboxes.filter((cb) => cb.checked).length,
+					obligationsSelected: obligationCheckboxes.filter((cb) => cb.checked).length,
+					prohibitionsSelected: prohibitionCheckboxes.filter((cb) => cb.checked).length,
+					phoneValues: phoneInputs.map((input) => input.value || ''),
+					riskSelected: Boolean(riskInput?.value),
+				};
+			}
+
+			function calculateFormCompletion(state) {
+				const textInputs = getTextInputs();
+				const textFilled = state.textValues.filter((val) => Boolean(val?.trim())).length;
+				const phoneComplete = state.phoneValues.filter(
+					(val) => (val || '').replace(/\D/g, '').length >= 10
+				).length;
+				const hazardSlot = state.hazardsSelected > 0 ? 1 : 0;
+				const obligationSlot = state.obligationsSelected > 0 ? 1 : 0;
+				const prohibitionSlot = state.prohibitionsSelected > 0 ? 1 : 0;
+				const riskSlot = state.riskSelected ? 1 : 0;
+				const totalSlots =
+					textInputs.length + phoneInputs.length + 4; // selections + risk + phone inputs
+				const earned =
+					textFilled +
+					phoneComplete +
+					hazardSlot +
+					obligationSlot +
+					prohibitionSlot +
+					riskSlot;
+				const pct = totalSlots === 0 ? 0 : (earned / totalSlots) * 100;
+				return Math.min(100, Math.max(0, pct));
+			}
+
+			function updateProgressBar() {
+				if (!progressFill) return;
+				const completion = calculateFormCompletion(getFormState());
+				progressFill.style.width = `${completion}%`;
+				progressFill.classList.remove('is-low', 'is-mid', 'is-high');
+				let tone = 'is-low';
+				if (completion > 66) {
+					tone = 'is-high';
+				} else if (completion > 33) {
+					tone = 'is-mid';
+				}
+				progressFill.classList.add(tone);
+			}
+
+			function syncPillSelectionClass(checkbox) {
+				const pill = checkbox.closest('.hazard-pill');
+				if (pill) {
+					pill.classList.toggle('selected', checkbox.checked);
+				}
+			}
+
+			// Info modal (shared)
+			const infoModal = document.createElement('div');
+			infoModal.className = 'info-modal hidden';
+			infoModal.innerHTML = `
+        <div class="info-backdrop"></div>
+        <div class="info-content">
+          <div class="info-body">
+            <div class="info-left">
+              <div class="info-visual"></div>
+              <div class="info-title"></div>
+            </div>
+            <div class="info-text"></div>
+          </div>
+          <button type="button" class="info-close" aria-label="Close">×</button>
+        </div>
+      `;
+			document.body.appendChild(infoModal);
+			const infoBackdrop = infoModal.querySelector('.info-backdrop');
+			const infoTextEl = infoModal.querySelector('.info-text');
+			const infoVisual = infoModal.querySelector('.info-visual');
+			const infoTitleEl = infoModal.querySelector('.info-title');
+			const infoClose = infoModal.querySelector('.info-close');
+
+			function openInfo({ text, icon, title, shape }) {
+				infoTextEl.textContent = text || 'No additional information';
+				infoTitleEl.textContent = title || '';
+				infoVisual.innerHTML = '';
+				if (icon) {
+					const img = document.createElement('img');
+					img.src = icon;
+					img.alt = title || 'icon';
+					infoVisual.appendChild(img);
+				} else if (shape) {
+					const span = document.createElement('span');
+					span.className = `risk-shape ${shape}`;
+					infoVisual.appendChild(span);
+				}
+				infoModal.classList.remove('hidden');
+			}
+
+			function closeInfo() {
+				infoModal.classList.add('hidden');
+			}
+
+			infoButtons.forEach((btn) => {
+				btn.addEventListener('click', (event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					const parent =
+						btn.closest('.hazard-pill') || btn.closest('.risk-button');
+					const info = parent?.dataset?.info || '';
+					const icon = parent?.dataset?.icon || '';
+					const title = parent?.dataset?.title || parent?.dataset?.label || '';
+					const shape = parent?.dataset?.shape || '';
+					openInfo({ text: info, icon, title, shape });
+				});
+			});
+			infoBackdrop.addEventListener('click', closeInfo);
+			infoClose.addEventListener('click', closeInfo);
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape') closeInfo();
+			});
+
+			// Risk selection
+			function chooseRisk(riskKey) {
+				riskInput.value = riskKey;
+				riskButtons.forEach((btn) => {
+					btn.classList.toggle('selected', btn.dataset.risk === riskKey);
+				});
+				updateProgressBar();
+			}
+			riskButtons.forEach((btn) => {
+				btn.addEventListener('click', () => chooseRisk(btn.dataset.risk));
+			});
+
+			// Hazards max 4 with order
+			const selectedHazardsOrder = [];
+			function validateHazards() {
+				hazardModalError.textContent = '';
+				return true;
+			}
+			hazardCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					if (event.target.checked) {
+						if (selectedHazardsOrder.length >= 4) {
+							event.target.checked = false;
+							hazardModalError.textContent = 'You can select up to 4 hazards';
+							return;
+						}
+						hazardModalError.textContent = '';
+						if (!selectedHazardsOrder.includes(val)) {
+							selectedHazardsOrder.push(val);
+						}
+					} else {
+						const idx = selectedHazardsOrder.indexOf(val);
+						if (idx !== -1) selectedHazardsOrder.splice(idx, 1);
+					}
+					hazardsOrderInput.value = selectedHazardsOrder.join(',');
+					syncPillSelectionClass(event.target);
+					updateProgressBar();
+				})
+			);
+
+			// Obligations / Prohibitions max 6 combined
+			const selectedObligationOrder = [];
+			const selectedProhibitionOrder = [];
+			obligationCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					const currentOb = selectedObligationOrder.length;
+					const currentPro = selectedProhibitionOrder.length;
+					if (event.target.checked) {
+						if (currentOb >= 6) {
+							event.target.checked = false;
+							obligationModalError.textContent =
+								'You can select up to 6 obligations';
+							return;
+						}
+						if (currentOb + currentPro >= 6) {
+							event.target.checked = false;
+							obligationModalError.textContent =
+								'You can select up to 6 obligations and prohibitions combined';
+							return;
+						}
+						obligationModalError.textContent = '';
+						if (!selectedObligationOrder.includes(val)) {
+							selectedObligationOrder.push(val);
+							if (selectedObligationOrder.length === 6) {
+								obligationModalError.textContent =
+									'You can select up to 6 obligations';
+							}
+						}
+					} else {
+						const idx = selectedObligationOrder.indexOf(val);
+						if (idx !== -1) selectedObligationOrder.splice(idx, 1);
+						if (selectedObligationOrder.length < 6) {
+							obligationModalError.textContent = '';
+						}
+					}
+					obligationsOrderInput.value = selectedObligationOrder.join(',');
+					syncPillSelectionClass(event.target);
+					updateProgressBar();
+				})
+			);
+
+			prohibitionCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', (event) => {
+					const val = event.target.value;
+					const currentOb = selectedObligationOrder.length;
+					const currentPro = selectedProhibitionOrder.length;
+					if (event.target.checked) {
+						if (currentPro >= 6) {
+							event.target.checked = false;
+							prohibitionModalError.textContent =
+								'You can select up to 6 prohibitions';
+							return;
+						}
+						if (currentOb + currentPro >= 6) {
+							event.target.checked = false;
+							prohibitionModalError.textContent =
+								'You can select up to 6 obligations and prohibitions combined';
+							return;
+						}
+						prohibitionModalError.textContent = '';
+						if (!selectedProhibitionOrder.includes(val)) {
+							selectedProhibitionOrder.push(val);
+							if (selectedProhibitionOrder.length === 6) {
+								prohibitionModalError.textContent =
+									'You can select up to 6 prohibitions';
+							}
+						}
+					} else {
+						const idx = selectedProhibitionOrder.indexOf(val);
+						if (idx !== -1) selectedProhibitionOrder.splice(idx, 1);
+						if (selectedProhibitionOrder.length < 6) {
+							prohibitionModalError.textContent = '';
+						}
+					}
+					prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+					syncPillSelectionClass(event.target);
+					updateProgressBar();
+				})
+			);
+
+			// Search filters
+			searchInput.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(hazardGrid.querySelectorAll('.hazard-pill')).forEach((pill) => {
+					const label = pill.dataset.label || '';
+					pill.style.display = label.includes(term) ? 'flex' : 'none';
+				});
+			});
+			obligationSearch.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(obligationGrid.querySelectorAll('.hazard-pill')).forEach(
+					(pill) => {
+						const label = pill.dataset.label || '';
+						pill.style.display = label.includes(term) ? 'flex' : 'none';
+					}
+				);
+			});
+			prohibitionSearch.addEventListener('input', (event) => {
+				const term = event.target.value.toLowerCase();
+				Array.from(prohibitionGrid.querySelectorAll('.hazard-pill')).forEach(
+					(pill) => {
+						const label = pill.dataset.label || '';
+						pill.style.display = label.includes(term) ? 'flex' : 'none';
+					}
+				);
+			});
+
+			// Risk validation (hazards allowed empty)
+			function validateRisk() {
+				const hasRisk = Boolean(riskInput.value);
+				riskError.textContent = hasRisk ? '' : 'Please select a risk level';
+				return hasRisk;
+			}
+			hazardCheckboxes.forEach((cb) => cb.addEventListener('change', validateHazards));
+
+			form.addEventListener('submit', (event) => {
+				const okHazard = validateHazards();
+				const okRisk = validateRisk();
+				hazardsOrderInput.value = selectedHazardsOrder.join(',');
+				obligationsOrderInput.value = selectedObligationOrder.join(',');
+				prohibitionsOrderInput.value = selectedProhibitionOrder.join(',');
+				if (!okHazard || !okRisk) event.preventDefault();
+			});
+
+			// Empty states
+			if (!hazardData.length) searchInput.placeholder = 'No hazards configured';
+			if (!obligationData.length)
+				obligationSearch.placeholder = 'No obligations configured';
+			if (!prohibitionData.length)
+				prohibitionSearch.placeholder = 'No prohibitions configured';
+
+			// Research groups dynamic inputs
+			function renderResearchInputs() {
+				const count = parseInt(researchSelect.value, 10) || 0;
+				researchInputsWrap.innerHTML = '';
+				for (let i = 0; i < count; i += 1) {
+					const input = document.createElement('input');
+					input.type = 'text';
+					input.name = 'research_names';
+					input.placeholder = `Research group ${i + 1} name`;
+					input.className = 'research-input';
+					researchInputsWrap.appendChild(input);
+				}
+			}
+			function setResearchCount(val) {
+				researchSelect.value = String(val);
+				renderResearchInputs();
+			}
+			if (researchSegmented) {
+				researchSegmented.querySelectorAll('button').forEach((btn) => {
+					btn.addEventListener('click', () => {
+						researchSegmented
+							.querySelectorAll('button')
+							.forEach((b) => b.classList.remove('active'));
+						btn.classList.add('active');
+						setResearchCount(btn.dataset.value || '1');
+					});
+				});
+			}
+			setResearchCount(researchSelect.value || '3');
+
+			// Phone formatting
+			function formatPhone(value) {
+				const digits = (value || '').replace(/\D/g, '').slice(0, 10);
+				const parts = [];
+				if (digits.length > 0) parts.push(digits.slice(0, 2));
+				if (digits.length > 2) parts.push(digits.slice(2, 4));
+				if (digits.length > 4) parts.push(digits.slice(4, 6));
+				if (digits.length > 6) parts.push(digits.slice(6, 10));
+				return parts.filter(Boolean).join(' ');
+			}
+			phoneInputs.forEach((input) => {
+				input.addEventListener('input', (e) => {
+					const formatted = formatPhone(e.target.value);
+					e.target.value = formatted;
+					const end = formatted.length;
+					e.target.setSelectionRange(end, end);
+					updateProgressBar();
+				});
+			});
+
+			function setDepartmentOpen(isOpen) {
+				if (!departmentField) return;
+				departmentField.classList.toggle('is-open', isOpen);
+				if (departmentInput) {
+					departmentInput.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+				}
+			}
+
+			function filterDepartmentOptions(value) {
+				const term = (value || '').trim().toLowerCase();
+				let visible = 0;
+				departmentOptions.forEach((option) => {
+					const label = (option.dataset.value || option.textContent || '').toLowerCase();
+					const match = !term || label.includes(term);
+					option.classList.toggle('is-hidden', !match);
+					if (match) visible += 1;
+				});
+				if (departmentEmpty) {
+					departmentEmpty.classList.toggle('is-hidden', visible > 0);
+				}
+				return visible;
+			}
+
+			if (departmentInput && departmentDropdown) {
+				let suppressDepartmentOpen = false;
+				const getDepartmentLabel = (option) =>
+					(option.dataset.value || option.textContent || '').trim();
+				const openDepartmentDropdown = () => {
+					if (suppressDepartmentOpen) {
+						suppressDepartmentOpen = false;
+						return;
+					}
+					const currentValue = (departmentInput.value || '').trim().toLowerCase();
+					const hasExactMatch = departmentOptions.some(
+						(option) => getDepartmentLabel(option).toLowerCase() === currentValue
+					);
+					filterDepartmentOptions(hasExactMatch ? '' : departmentInput.value);
+					setDepartmentOpen(true);
+				};
+				const closeDepartmentDropdown = () => {
+					setDepartmentOpen(false);
+				};
+
+				departmentInput.addEventListener('focus', openDepartmentDropdown);
+				departmentInput.addEventListener('click', openDepartmentDropdown);
+				departmentInput.addEventListener('input', () => {
+					filterDepartmentOptions(departmentInput.value);
+					setDepartmentOpen(true);
+					updateProgressBar();
+				});
+				departmentInput.addEventListener('keydown', (event) => {
+					if (event.key === 'ArrowDown') {
+						const visible = departmentOptions.filter(
+							(option) => !option.classList.contains('is-hidden')
+						);
+						if (visible.length) {
+							event.preventDefault();
+							visible[0].focus();
+						}
+					}
+				});
+
+				departmentOptions.forEach((option, index) => {
+					option.addEventListener('click', () => {
+						departmentInput.value =
+							option.dataset.value || option.textContent || '';
+						closeDepartmentDropdown();
+						updateProgressBar();
+						suppressDepartmentOpen = true;
+						departmentInput.focus();
+					});
+					option.addEventListener('keydown', (event) => {
+						if (event.key === 'ArrowDown') {
+							event.preventDefault();
+							for (let i = index + 1; i < departmentOptions.length; i += 1) {
+								if (!departmentOptions[i].classList.contains('is-hidden')) {
+									departmentOptions[i].focus();
+									return;
+								}
+							}
+						}
+						if (event.key === 'ArrowUp') {
+							event.preventDefault();
+							for (let i = index - 1; i >= 0; i -= 1) {
+								if (!departmentOptions[i].classList.contains('is-hidden')) {
+									departmentOptions[i].focus();
+									return;
+								}
+							}
+							departmentInput.focus();
+						}
+						if (event.key === 'Escape') {
+							closeDepartmentDropdown();
+							departmentInput.focus();
+						}
+					});
+				});
+
+				departmentField?.addEventListener('focusout', (event) => {
+					if (departmentField && !departmentField.contains(event.relatedTarget)) {
+						closeDepartmentDropdown();
+					}
+				});
+				document.addEventListener('click', (event) => {
+					if (departmentField && !departmentField.contains(event.target)) {
+						closeDepartmentDropdown();
+					}
+				});
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') closeDepartmentDropdown();
+				});
+			}
+			function setRoomOpen(isOpen) {
+				if (!roomRow) return;
+				roomRow.classList.toggle('is-open', isOpen);
+				if (roomInput) {
+					roomInput.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+				}
+			}
+
+			function filterRoomOptions(value) {
+				const term = (value || '').trim().toLowerCase();
+				let visible = 0;
+				roomOptions.forEach((option) => {
+					const label = (option.dataset.value || option.textContent || '').toLowerCase();
+					const match = !term || label.includes(term);
+					option.classList.toggle('is-hidden', !match);
+					if (match) visible += 1;
+				});
+				if (roomEmpty) {
+					roomEmpty.classList.toggle('is-hidden', visible > 0);
+				}
+				return visible;
+			}
+
+			if (roomInput && roomDropdown) {
+				let suppressRoomOpen = false;
+				const getRoomLabel = (option) =>
+					(option.dataset.value || option.textContent || '').trim();
+				const openRoomDropdown = () => {
+					if (suppressRoomOpen) {
+						suppressRoomOpen = false;
+						return;
+					}
+					const currentValue = (roomInput.value || '').trim().toLowerCase();
+					const hasExactMatch = roomOptions.some(
+						(option) => getRoomLabel(option).toLowerCase() === currentValue
+					);
+					filterRoomOptions(hasExactMatch ? '' : roomInput.value);
+					setRoomOpen(true);
+				};
+				const closeRoomDropdown = () => {
+					setRoomOpen(false);
+				};
+
+				roomInput.addEventListener('focus', openRoomDropdown);
+				roomInput.addEventListener('click', openRoomDropdown);
+				roomInput.addEventListener('input', () => {
+					filterRoomOptions(roomInput.value);
+					setRoomOpen(true);
+					updateProgressBar();
+				});
+				roomInput.addEventListener('keydown', (event) => {
+					if (event.key === 'ArrowDown') {
+						const visible = roomOptions.filter(
+							(option) => !option.classList.contains('is-hidden')
+						);
+						if (visible.length) {
+							event.preventDefault();
+							visible[0].focus();
+						}
+					}
+				});
+
+				roomOptions.forEach((option, index) => {
+					option.addEventListener('click', () => {
+						roomInput.value = option.dataset.value || option.textContent || '';
+						closeRoomDropdown();
+						updateProgressBar();
+						suppressRoomOpen = true;
+						roomInput.focus();
+					});
+					option.addEventListener('keydown', (event) => {
+						if (event.key === 'ArrowDown') {
+							event.preventDefault();
+							for (let i = index + 1; i < roomOptions.length; i += 1) {
+								if (!roomOptions[i].classList.contains('is-hidden')) {
+									roomOptions[i].focus();
+									return;
+								}
+							}
+						}
+						if (event.key === 'ArrowUp') {
+							event.preventDefault();
+							for (let i = index - 1; i >= 0; i -= 1) {
+								if (!roomOptions[i].classList.contains('is-hidden')) {
+									roomOptions[i].focus();
+									return;
+								}
+							}
+							roomInput.focus();
+						}
+						if (event.key === 'Escape') {
+							closeRoomDropdown();
+							roomInput.focus();
+						}
+					});
+				});
+
+				roomRow?.addEventListener('focusout', (event) => {
+					if (roomRow && !roomRow.contains(event.relatedTarget)) {
+						closeRoomDropdown();
+					}
+				});
+				document.addEventListener('click', (event) => {
+					if (roomRow && !roomRow.contains(event.target)) {
+						closeRoomDropdown();
+					}
+				});
+				document.addEventListener('keydown', (event) => {
+					if (event.key === 'Escape') closeRoomDropdown();
+				});
+			}
+			form.addEventListener('input', (event) => {
+				if (event.target && ['text', 'tel'].includes(event.target.type)) {
+					updateProgressBar();
+				}
+			});
+			hazardCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', () => {
+					updateProgressBar();
+				})
+			);
+			obligationCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', () => {
+					updateProgressBar();
+				})
+			);
+			prohibitionCheckboxes.forEach((cb) =>
+				cb.addEventListener('change', () => {
+					updateProgressBar();
+				})
+			);
+
+			// Modal open/close handlers
+			function clearModalErrors() {
+				hazardModalError.textContent = '';
+				obligationModalError.textContent = '';
+				prohibitionModalError.textContent = '';
+			}
+			const modalMap = {
+				'hazard-modal': document.getElementById('hazard-modal'),
+				'obligation-modal': document.getElementById('obligation-modal'),
+				'prohibition-modal': document.getElementById('prohibition-modal'),
+			};
+
+			document.querySelectorAll('.open-modal-btn').forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const target = btn.dataset.target;
+					const modal = modalMap[target];
+					if (modal) {
+						clearModalErrors();
+						modal.classList.remove('hidden');
+					}
+				});
+			});
+
+			document.querySelectorAll('.close-modal').forEach((btn) => {
+				btn.addEventListener('click', () => {
+					const target = btn.dataset.target;
+					const modal = modalMap[target];
+					if (modal) modal.classList.add('hidden');
+				});
+			});
+
+			Object.values(modalMap).forEach((modal) => {
+				modal
+					?.querySelector('.select-modal__backdrop')
+					?.addEventListener('click', () => modal.classList.add('hidden'));
+			});
+
+			hazardCheckboxes.forEach((cb) => syncPillSelectionClass(cb));
+			obligationCheckboxes.forEach((cb) => syncPillSelectionClass(cb));
+			prohibitionCheckboxes.forEach((cb) => syncPillSelectionClass(cb));
+			updateProgressBar();
+
+			// Theme toggle
+			const themeToggle = document.getElementById('theme-toggle');
+			const THEME_KEY = 'door_sheet_theme';
+			function applyTheme(mode) {
+				if (mode === 'dark') {
+					document.body.classList.add('theme-dark');
+					themeToggle.innerHTML =
+						'<span class="theme-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"></path></svg></span>';
+				} else {
+					document.body.classList.remove('theme-dark');
+					themeToggle.innerHTML =
+						'<span class="theme-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></span>';
+				}
+			}
+			const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+			const storedTheme = localStorage.getItem(THEME_KEY);
+			const initialTheme = storedTheme || (systemPrefersDark.matches ? 'dark' : 'light');
+			applyTheme(initialTheme);
+			systemPrefersDark.addEventListener('change', (event) => {
+				if (!localStorage.getItem(THEME_KEY)) {
+					applyTheme(event.matches ? 'dark' : 'light');
+				}
+			});
+			themeToggle.addEventListener('click', () => {
+				const isDark = document.body.classList.toggle('theme-dark');
+				const next = isDark ? 'dark' : 'light';
+				localStorage.setItem(THEME_KEY, next);
+				applyTheme(next);
+			});
+
+		</script>
+	</body>
+</html>
