@@ -33,6 +33,8 @@ A minimal Flask app that overlays a hazard pictogram and caption onto a provided
    - Choose a risk level (Minimal/Moderate/Significant) via the colored buttons.
    - Click **Generate PDF**.
 
-## Notes
-- The PDF overlay positioning assumes a ~540 x 780 pt page with the MAIN Hazards box in the lower-left half. Adjust the `main_box_*` values in `app.py` if your templates differ.
-- Download names reflect the chosen hazard and risk (e.g., `door_sheet_biological_minimal_hazard.pdf`).
+Purpose of Version 5
+
+Version 5 focuses on improving usability, standardization, and visual clarity.
+Laboratory staff can now select Departments and Rooms from predefined lists instead of entering free text, reducing errors and ensuring consistency across generated door sheets. In addition, the interface has been visually redesigned, and a dark theme has been introduced to improve comfort and accessibility.
+
