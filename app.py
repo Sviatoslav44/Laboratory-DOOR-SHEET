@@ -1,13 +1,38 @@
+import os
+import time
 from io import BytesIO
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-from flask import Flask, render_template, request, send_file
+from dotenv import load_dotenv
+from flask import Flask, jsonify, render_template, request, send_file
+from flask_sqlalchemy import SQLAlchemy
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
+from sqlalchemy import func
 
 app = Flask(__name__)
+db = SQLAlchemy()
+
+load_dotenv()
+
+
+def build_database_url() -> str:
+    env_url = os.getenv("DATABASE_URL")
+    if env_url:
+        return env_url
+    user = os.getenv("POSTGRES_USER", "doorsheet")
+    password = os.getenv("POSTGRES_PASSWORD", "doorsheet")
+    db_name = os.getenv("POSTGRES_DB", "doorsheet")
+    host = os.getenv("POSTGRES_HOST", "localhost")
+    port = os.getenv("POSTGRES_PORT", "5434")
+    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db_name}"
+
+
+app.config["SQLALCHEMY_DATABASE_URI"] = build_database_url()
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATE_PATH = BASE_DIR / "door_sheet_template.pdf"
@@ -159,6 +184,35 @@ OBLIGATION_DIR = BASE_DIR / "static" / "obligation_signs"
 PROHIBITION_DIR = BASE_DIR / "static" / "prohibition_signs"
 
 
+class SavedTemplate(db.Model):
+    __tablename__ = "saved_templates"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(180), unique=True, nullable=False)
+    data = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(
+        db.DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at = db.Column(
+        db.DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
+
+
+def serialize_template(template: SavedTemplate, include_data: bool = False) -> dict:
+    payload = {
+        "id": template.id,
+        "name": template.name,
+        "created_at": template.created_at.isoformat() if template.created_at else None,
+        "updated_at": template.updated_at.isoformat() if template.updated_at else None,
+    }
+    if include_data:
+        payload["data"] = template.data
+    return payload
+
+
 def load_obligations() -> Dict[str, dict]:
     obligations: Dict[str, dict] = {}
     if not OBLIGATION_DIR.exists():
@@ -196,6 +250,27 @@ if PROHIBITION_DIR.exists():
             "caption": label,
             "icon_path": path,
         }
+
+
+def wait_for_db(max_retries: int = 30, delay: float = 1.0) -> None:
+    """Wait for database to be ready before creating tables."""
+    from sqlalchemy import text
+
+    for attempt in range(max_retries):
+        try:
+            with db.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("Database is ready!")
+            return
+        except Exception as e:
+            print(f"Waiting for database... attempt {attempt + 1}/{max_retries}")
+            time.sleep(delay)
+    raise Exception("Could not connect to database after multiple retries")
+
+
+with app.app_context():
+    wait_for_db()
+    db.create_all()
 
 RISK_TEMPLATES = {
     "minimal": {
@@ -933,6 +1008,52 @@ def index():
         prohibitions=prohibition_options,
         risks=risk_options,
     )
+
+
+@app.route("/api/templates", methods=["GET"])
+def list_templates():
+    templates = SavedTemplate.query.order_by(SavedTemplate.updated_at.desc()).all()
+    return jsonify([serialize_template(template) for template in templates])
+
+
+@app.route("/api/templates", methods=["POST"])
+def create_template():
+    payload = request.get_json(silent=True) or {}
+    name = (payload.get("name") or "").strip()
+    data = payload.get("data")
+    if not name:
+        return jsonify({"error": "Template name is required"}), 400
+    if not isinstance(data, dict):
+        return jsonify({"error": "Template data must be an object"}), 400
+
+    existing = SavedTemplate.query.filter_by(name=name).first()
+    if existing:
+        existing.data = data
+        db.session.commit()
+        return jsonify(serialize_template(existing, include_data=True)), 200
+
+    template = SavedTemplate(name=name, data=data)
+    db.session.add(template)
+    db.session.commit()
+    return jsonify(serialize_template(template, include_data=True)), 201
+
+
+@app.route("/api/templates/<int:template_id>", methods=["GET"])
+def get_template(template_id: int):
+    template = SavedTemplate.query.get(template_id)
+    if not template:
+        return jsonify({"error": "Template not found"}), 404
+    return jsonify(serialize_template(template, include_data=True))
+
+
+@app.route("/api/templates/<int:template_id>", methods=["DELETE"])
+def delete_template(template_id: int):
+    template = SavedTemplate.query.get(template_id)
+    if not template:
+        return jsonify({"error": "Template not found"}), 404
+    db.session.delete(template)
+    db.session.commit()
+    return jsonify({"status": "deleted"})
 
 
 @app.route("/generate", methods=["POST"])
