@@ -14,13 +14,4 @@
    ```bash
    python3 app.py
    ```
-4. Open http://127.0.0.1:5000 in your browser:
-   - Click the hazard search box to select **Biological Hazard** or **Electrical Hazard**.
-   - Choose a risk level (Minimal/Moderate/Significant) via the colored buttons.
-   - Click **Generate PDF**.
-
-Purpose of Version 5
-
-Version 5 focuses on improving usability, standardization, and visual clarity.
-Laboratory staff can now select Departments and Rooms from predefined lists instead of entering free text, reducing errors and ensuring consistency across generated door sheets. In addition, the interface has been visually redesigned, and a dark theme has been introduced to improve comfort and accessibility.
-
+4. Open http://127.0.0.1:5000 in your browser.
