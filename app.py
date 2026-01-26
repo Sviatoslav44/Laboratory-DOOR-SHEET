@@ -1,9 +1,12 @@
 import os
 import time
+import secrets
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
+import fitz  # PyMuPDF for extracting images from PDF
 from dotenv import load_dotenv
 from flask import Flask, jsonify, render_template, request, send_file
 from flask_sqlalchemy import SQLAlchemy
@@ -12,10 +15,13 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader
 from sqlalchemy import func
 
+load_dotenv()
+
 app = Flask(__name__)
 db = SQLAlchemy()
 
-load_dotenv()
+# Secret key for sessions
+app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", secrets.token_hex(32))
 
 
 def build_database_url() -> str:
@@ -188,7 +194,7 @@ class SavedTemplate(db.Model):
     __tablename__ = "saved_templates"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(180), unique=True, nullable=False)
+    name = db.Column(db.String(180), nullable=False, unique=True)
     data = db.Column(db.JSON, nullable=False)
     created_at = db.Column(
         db.DateTime(timezone=True), server_default=func.now(), nullable=False
@@ -275,15 +281,15 @@ with app.app_context():
 RISK_TEMPLATES = {
     "minimal": {
         "label": "Minimal Risk",
-        "template_path": BASE_DIR / "static" / "risks" / "minimal_risk.pdf",
+        "prefix": "minimal_risk",
     },
     "moderate": {
         "label": "Moderate Risk",
-        "template_path": BASE_DIR / "static" / "risks" / "moderate_risk.pdf",
+        "prefix": "moderate_risk",
     },
     "significant": {
         "label": "Significant Risk",
-        "template_path": BASE_DIR / "static" / "risks" / "significant_risk.pdf",
+        "prefix": "significant_risk",
     },
 }
 RISK_INFO = {
@@ -299,11 +305,56 @@ RISK_INFO = {
 }
 
 
+def extract_qr_from_pdf(pdf_file) -> Optional[BytesIO]:
+    """Extract QR code image from uploaded PDF file."""
+    try:
+        pdf_bytes = pdf_file.read()
+        pdf_file.seek(0)  # Reset for potential re-read
+
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        if len(doc) == 0:
+            return None
+
+        page = doc[0]
+        images = page.get_images(full=True)
+
+        if not images:
+            # If no images found, render the page as an image
+            pix = page.get_pixmap(dpi=150)
+            img_data = pix.tobytes("png")
+            doc.close()
+            return BytesIO(img_data)
+
+        # Get the first image (QR code)
+        for img_index, img in enumerate(images):
+            xref = img[0]
+            base_image = doc.extract_image(xref)
+            image_bytes = base_image["image"]
+            doc.close()
+            return BytesIO(image_bytes)
+
+        doc.close()
+        return None
+    except Exception as e:
+        app.logger.warning(f"Failed to extract QR from PDF: {e}")
+        return None
+
+
+def risk_template_path(risk_key: str, access_variant: str) -> Path:
+    risk = RISK_TEMPLATES.get(risk_key)
+    if risk is None:
+        raise ValueError(f"Unsupported risk type: {risk_key}")
+    suffix = "all" if access_variant == "all" else "only"
+    template_name = f"{risk['prefix']}-{suffix}.pdf"
+    return BASE_DIR / "static" / "risks" / template_name
+
+
 def generate_hazard_pdf(
     hazard_keys: List[str],
     obligation_keys: List[str],
     prohibition_keys: List[str],
     risk_key: str,
+    access_variant: str,
     department: str,
     research_groups: List[str],
     room_number: str,
@@ -317,6 +368,7 @@ def generate_hazard_pdf(
     emergency_phone_2: str,
     activity_type: str,
     activity_hazard: str,
+    qr_image: Optional[BytesIO] = None,
 ) -> Tuple[BytesIO, str]:
     """Overlay selected hazard icons, obligation/prohibition signs, research groups, department, and captions onto the chosen risk template."""
     unique_hazards = []
@@ -336,11 +388,7 @@ def generate_hazard_pdf(
         if prohibition:
             unique_prohibitions.append((key, prohibition))
 
-    risk = RISK_TEMPLATES.get(risk_key)
-    if risk is None:
-        raise ValueError(f"Unsupported risk type: {risk_key}")
-
-    template_path = risk["template_path"]
+    template_path = risk_template_path(risk_key, access_variant)
     if not template_path.exists():
         raise FileNotFoundError(f"Template PDF not found at: {template_path}")
 
@@ -876,11 +924,16 @@ def generate_hazard_pdf(
     row2_y = row1_y - row_gap + 10
     if pi_name:
         overlay_canvas.drawString(name_x, row1_y, pi_name)
-    if pi_phone:
+
+    def is_complete_phone(value: str) -> bool:
+        digits = "".join(ch for ch in value if ch.isdigit())
+        return len(digits) >= 10
+
+    if pi_phone and is_complete_phone(pi_phone):
         overlay_canvas.drawRightString(phone_x, row1_y, pi_phone)
     if safety_name:
         overlay_canvas.drawString(name_x, row2_y, safety_name)
-    if safety_phone:
+    if safety_phone and is_complete_phone(safety_phone):
         overlay_canvas.drawRightString(phone_x, row2_y, safety_phone)
 
     # Emergency contacts block: same layout, shifted down by 70 pts
@@ -888,11 +941,11 @@ def generate_hazard_pdf(
     em_row2_y = row2_y - 95
     if emergency_name_1:
         overlay_canvas.drawString(name_x, em_row1_y, emergency_name_1)
-    if emergency_phone_1:
+    if emergency_phone_1 and is_complete_phone(emergency_phone_1):
         overlay_canvas.drawRightString(phone_x, em_row1_y, emergency_phone_1)
     if emergency_name_2:
         overlay_canvas.drawString(name_x, em_row2_y, emergency_name_2)
-    if emergency_phone_2:
+    if emergency_phone_2 and is_complete_phone(emergency_phone_2):
         overlay_canvas.drawRightString(phone_x, em_row2_y, emergency_phone_2)
 
     # Type of activity / Hazard class row (below emergency contacts)
@@ -910,8 +963,8 @@ def generate_hazard_pdf(
     offset_x = 140
     rect_y = act_row_y - 4.5
     rect_w_draw = rect_w - 20  # reduce width by 10 on the right
-    left_box_x = start_x + offset_x - 40
-    right_box_x = mid_x + offset_x - 12
+    left_box_x = start_x + offset_x - 80
+    right_box_x = mid_x + offset_x - 67
     # No stroke to avoid borders
     overlay_canvas.rect(left_box_x, rect_y, rect_w_draw, rect_h, stroke=0, fill=0)
     overlay_canvas.rect(right_box_x, rect_y, rect_w_draw, rect_h, stroke=0, fill=0)
@@ -923,6 +976,49 @@ def generate_hazard_pdf(
         overlay_canvas.drawCentredString(
             right_box_x + rect_w_draw / 2, rect_y + rect_h / 2 - 4, activity_hazard
         )
+
+    # Draw validated date at the bottom left - cover old date with white rect first
+    today = datetime.now()
+    today_date = f"{today.day}.{today.month}.{today.year}"
+    # Cover the old date "4.6.2021" with white rectangle
+    date_x = 25
+    date_y = 40  # position of the old date
+    date_rect_width = 50
+    date_rect_height = 12
+    overlay_canvas.setFillColorRGB(1, 1, 1)  # white
+    overlay_canvas.rect(
+        date_x, date_y - 2, date_rect_width, date_rect_height, stroke=0, fill=1
+    )
+    # Draw new date on top
+    overlay_canvas.setFillColorRGB(0, 0, 0)  # black text
+    overlay_canvas.setFont("Helvetica", 10)
+    overlay_canvas.drawString(date_x, date_y, today_date)
+
+    # QR code position
+    qr_x = 20  # x position
+    qr_y = 65  # y position
+    qr_size = 55  # size of QR code
+
+    # Always cover old QR code with white rectangle first
+    overlay_canvas.setFillColorRGB(1, 1, 1)
+    overlay_canvas.rect(qr_x - 2, qr_y - 2, qr_size + 4, qr_size + 4, stroke=0, fill=1)
+
+    # Draw QR code if provided
+    if qr_image:
+        try:
+            qr_reader = ImageReader(qr_image)
+            # Draw new QR code
+            overlay_canvas.drawImage(
+                qr_reader,
+                qr_x,
+                qr_y,
+                width=qr_size,
+                height=qr_size,
+                preserveAspectRatio=True,
+                mask="auto",
+            )
+        except Exception as e:
+            app.logger.warning(f"Failed to draw QR code: {e}")
 
     # Finalize the single overlay page even if nothing was drawn.
     overlay_canvas.showPage()
@@ -940,16 +1036,13 @@ def generate_hazard_pdf(
     output_stream = BytesIO()
     writer.write(output_stream)
     output_stream.seek(0)
-    first_hazard = unique_hazards[0][0] if unique_hazards else ""
-    sanitized = (
-        [rg.strip().replace(" ", "_") for rg in research_groups if rg.strip()]
-        if research_groups
-        else []
+    # Use room number as filename, fallback to door_sheet
+    safe_room = (
+        room_number.replace("/", "_").replace("\\", "_")
+        if room_number
+        else "door_sheet"
     )
-    group_part = "_".join(sanitized) if sanitized else ""
-    # Prefer research group names; if none, use selected risk; fallback to hazard or default.
-    base_name = group_part or risk_key or first_hazard or "door_sheet"
-    download_name = f"{base_name}.pdf"
+    download_name = f"{safe_room}.pdf"
     return output_stream, download_name
 
 
@@ -1010,6 +1103,9 @@ def index():
     )
 
 
+# ==================== TEMPLATE ROUTES ====================
+
+
 @app.route("/api/templates", methods=["GET"])
 def list_templates():
     templates = SavedTemplate.query.order_by(SavedTemplate.updated_at.desc()).all()
@@ -1040,7 +1136,7 @@ def create_template():
 
 @app.route("/api/templates/<int:template_id>", methods=["GET"])
 def get_template(template_id: int):
-    template = SavedTemplate.query.get(template_id)
+    template = SavedTemplate.query.filter_by(id=template_id).first()
     if not template:
         return jsonify({"error": "Template not found"}), 404
     return jsonify(serialize_template(template, include_data=True))
@@ -1048,7 +1144,7 @@ def get_template(template_id: int):
 
 @app.route("/api/templates/<int:template_id>", methods=["DELETE"])
 def delete_template(template_id: int):
-    template = SavedTemplate.query.get(template_id)
+    template = SavedTemplate.query.filter_by(id=template_id).first()
     if not template:
         return jsonify({"error": "Template not found"}), 404
     db.session.delete(template)
@@ -1058,6 +1154,7 @@ def delete_template(template_id: int):
 
 @app.route("/generate", methods=["POST"])
 def generate():
+    # Collect form data
     order_str = request.form.get("hazards_order", "")
     if order_str:
         hazard_keys = [h for h in order_str.split(",") if h]
@@ -1091,6 +1188,47 @@ def generate():
     activity_type = (request.form.get("activity_type") or "").strip()
     activity_hazard = (request.form.get("activity_hazard") or "").strip()
     risk_key = (request.form.get("risk") or "").strip().lower()
+    access_all_persons = bool(request.form.get("access_all_persons"))
+    access_lab_member = bool(request.form.get("access_lab_member"))
+    if access_all_persons:
+        access_variant = "all"
+    elif access_lab_member:
+        access_variant = "only"
+    else:
+        access_variant = "only"
+
+    # Validation
+    errors = []
+    if not department:
+        errors.append("Department is required")
+    if not research_names:
+        errors.append("At least one research group is required")
+    if not room_number:
+        errors.append("Room number is required")
+    if not pi_name and not safety_name:
+        errors.append("At least one laboratory contact name is required")
+    if not pi_phone and not safety_phone:
+        errors.append("At least one laboratory contact phone is required")
+    if not emergency_name_1 and not emergency_name_2:
+        errors.append("At least one emergency contact name is required")
+    if not emergency_phone_1 and not emergency_phone_2:
+        errors.append("At least one emergency contact phone is required")
+    if not activity_type:
+        errors.append("Type of activity is required")
+    if not activity_hazard:
+        errors.append("Hazard class is required")
+    if not risk_key:
+        errors.append("Risk level is required")
+
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    # Handle QR code file upload
+    qr_image = None
+    qr_file = request.files.get("qr_file")
+    if qr_file and qr_file.filename:
+        qr_image = extract_qr_from_pdf(qr_file)
+
     if not risk_key:
         # Fallback to the first configured risk if none was chosen.
         risk_key = next(iter(RISK_TEMPLATES))
@@ -1100,6 +1238,7 @@ def generate():
             obligation_keys,
             prohibition_keys,
             risk_key,
+            access_variant,
             department,
             research_names,
             room_number,
@@ -1113,6 +1252,7 @@ def generate():
             emergency_phone_2,
             activity_type,
             activity_hazard,
+            qr_image,
         )
     except Exception as exc:  # pylint: disable=broad-except
         app.logger.exception("Failed to generate PDF")
