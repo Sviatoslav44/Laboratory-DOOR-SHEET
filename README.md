@@ -1,16 +1,11 @@
 # Door Sheet PDF Generator
 
 ## Setup
-1. Create and activate a virtual environment (optional but recommended):
-   ```bash
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
-   ```
-2. Install dependencies:
+1. Install dependencies:
    ```bash
    python3 -m pip install -r requirements.txt
    ```
-3. Run the app:
+2. Run the app:
    ```bash
    python3 app.py
    ```
@@ -18,4 +13,4 @@
    ```bash
    xattr -dr com.apple.quarantine .venv
    ```
-5. Open http://127.0.0.1:5000 in your browser.
+3. Open http://127.0.0.1:5000 in your browser.
