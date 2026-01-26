@@ -15,5 +15,7 @@
    python3 app.py
    ```
    *If you see a Pillow (PIL) error on macOS, run:
-   
-4. Open http://127.0.0.1:5000 in your browser.
+   ```bash
+   xattr -dr com.apple.quarantine .venv
+   ```
+5. Open http://127.0.0.1:5000 in your browser.
