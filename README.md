@@ -53,10 +53,28 @@ Python is the language running the logic behind the app.
 
 Run these commands inside the **VS Code Terminal**.
 
-### Step 2: Run project
+### Step 1: Install Dependencies
+Copy and paste this command to install the necessary libraries:
 
+```bash
+pip install -r requirements.txt
+
+```
+### Step 2: Run the App
+Start the application using the command for your system:
+
+Windows:
 
 ```bash
 python app.py
+```
+macOS:
 
+```bash
+python3 app.py
+```
 
+### Step 3: Open in Browser
+Once the app is running, you will see a message in the terminal.
+
+Go to this address: http://127.0.0.1:5000
