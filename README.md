@@ -53,8 +53,10 @@ Python is the language running the logic behind the app.
 
 Run these commands inside the **VS Code Terminal**.
 
-### Step 1: Install Dependencies
-Copy and paste this command to install the necessary libraries:
+### Step 2: Run project
+
 
 ```bash
-pip install -r requirements.txt
+python app.py
+
+
