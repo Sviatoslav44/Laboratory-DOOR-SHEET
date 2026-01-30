@@ -57,7 +57,7 @@ Run these commands inside the **VS Code Terminal**.
 Copy and paste this command to install the necessary libraries:
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
 ```
 ### Step 2: Run the App
