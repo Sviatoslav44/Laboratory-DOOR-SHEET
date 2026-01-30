@@ -98,9 +98,38 @@
 					role="status"
 					aria-live="polite"
 				></div>
+				<!-- Divider -->
+				<div class="sidebar__divider"></div>
+				<!-- Templates section -->
+				<div class="sidebar__section">
+					<div class="sidebar__section-header">
+						<span class="sidebar__section-title">Your templates</span>
+						<span class="sidebar__section-count" id="template-count">0</span>
+					</div>
+					<!-- Template search -->
+					<div class="sidebar__search" id="template-search-wrapper">
+						<svg class="sidebar__search-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="11" cy="11" r="8"></circle>
+							<line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+						</svg>
+						<input
+							type="text"
+							id="template-search"
+							class="sidebar__search-input"
+							placeholder="Search..."
+							autocomplete="off"
+						/>
+					</div>
+				</div>
 				<div class="template-list hidden" id="template-list"></div>
 				<div class="template-empty hidden" id="template-empty">
-					No saved templates yet.
+					<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+						<polyline points="14 2 14 8 20 8"></polyline>
+						<line x1="12" y1="18" x2="12" y2="12"></line>
+						<line x1="9" y1="15" x2="15" y2="15"></line>
+					</svg>
+					<span>No saved templates yet</span>
 				</div>
 			</aside>
 			<!-- Confirm Delete Modal -->
@@ -391,23 +420,67 @@
 						<div class="activity-row">
 							<div class="activity-field">
 								<label for="activity-type">Type of activity</label>
-								<input
-									id="activity-type"
-									name="activity_type"
-									type="text"
-									class="research-input"
-									placeholder="Enter activity type"
-								/>
+								<div class="activity-input-wrapper">
+									<input
+										id="activity-type"
+										name="activity_type"
+										type="text"
+										class="research-input"
+										placeholder="Enter activity type"
+									/>
+									<span class="activity-info-btn" aria-label="Activity type examples">
+										i
+										<div class="activity-tooltip">
+											<div class="activity-tooltip-inner">
+												<div class="activity-tooltip-content">
+													<div class="activity-tooltip-examples">
+														<ul class="copyable-list">
+															<li class="copyable-item">Microbiology</li>
+															<li class="copyable-item">Chemical synthesis</li>
+															<li class="copyable-item">Neutron scattering</li>
+															<li class="copyable-item">Laser experiments</li>
+															<li class="copyable-item">Sample preparation</li>
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div>
+									</span>
+								</div>
 							</div>
 							<div class="activity-field">
 								<label for="activity-hazard">Hazard class</label>
-								<input
-									id="activity-hazard"
-									name="activity_hazard"
-									type="text"
-									class="research-input"
-									placeholder="Enter hazard class"
-								/>
+								<div class="activity-input-wrapper">
+									<input
+										id="activity-hazard"
+										name="activity_hazard"
+										type="text"
+										class="research-input"
+										placeholder="Enter hazard class"
+									/>
+									<span class="activity-info-btn" aria-label="Hazard class examples">
+										i
+										<div class="activity-tooltip">
+											<div class="activity-tooltip-inner">
+												<div class="activity-tooltip-content">
+													<div class="activity-tooltip-examples">
+														<ul class="copyable-list">
+															<li class="copyable-item">Nanomaterials (type)</li>
+															<li class="copyable-item">Biosafety level 1</li>
+															<li class="copyable-item">Biosafety level 2</li>
+															<li class="copyable-item">Animal facility</li>
+															<li class="copyable-item">Laser Lab (Class 4B)</li>
+															<li class="copyable-item">Chemical laboratory</li>
+															<li class="copyable-item">Teaching laboratory</li>
+															<li class="copyable-item">Physics laboratory</li>
+															<li class="copyable-item">Concrete laboratory</li>
+														</ul>
+													</div>
+												</div>
+											</div>
+										</div>
+									</span>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -694,6 +767,9 @@
 			const templateStatus = document.getElementById('template-status');
 			const templateList = document.getElementById('template-list');
 			const templateEmpty = document.getElementById('template-empty');
+			const templateSearchInput = document.getElementById('template-search');
+			const templateCount = document.getElementById('template-count');
+			let allTemplates = [];
 
 			// Show template list on page load
 			templateList?.classList.remove('hidden');
@@ -1547,14 +1623,41 @@
 				return date.toLocaleString();
 			}
 
-			function renderTemplateList(templates) {
+			function updateTemplateCount(count) {
+				if (templateCount) {
+					templateCount.textContent = count;
+				}
+			}
+
+			function renderTemplateList(templates, isFiltered = false) {
 				if (!templateList || !templateEmpty) return;
 				templateList.innerHTML = '';
+				const searchWrapper = document.getElementById('template-search-wrapper');
+				const emptyIcon = templateEmpty.querySelector('svg');
+				const emptyText = templateEmpty.querySelector('span');
+
 				if (!templates.length) {
-					templateEmpty.classList.remove('is-hidden');
+					templateList.classList.add('is-hidden');
+					templateEmpty.classList.remove('hidden');
+
+					if (isFiltered && allTemplates.length) {
+						// No search results
+						if (emptyIcon) emptyIcon.style.display = 'none';
+						if (emptyText) emptyText.textContent = 'No templates found';
+					} else {
+						// No templates at all
+						if (emptyIcon) emptyIcon.style.display = '';
+						if (emptyText) emptyText.textContent = 'No saved templates yet';
+						if (searchWrapper) searchWrapper.classList.add('is-hidden');
+					}
 					return;
 				}
-				templateEmpty.classList.add('is-hidden');
+
+				templateEmpty.classList.add('hidden');
+				templateList.classList.remove('is-hidden');
+				if (searchWrapper) {
+					searchWrapper.classList.remove('is-hidden');
+				}
 				templates.forEach((template) => {
 					const item = document.createElement('div');
 					item.className = 'template-item';
@@ -1620,7 +1723,9 @@
 						throw new Error('Failed to load templates');
 					}
 					const data = await response.json();
-					renderTemplateList(Array.isArray(data) ? data : []);
+					allTemplates = Array.isArray(data) ? data : [];
+					updateTemplateCount(allTemplates.length);
+					renderTemplateList(allTemplates);
 				} catch (error) {
 					setTemplateStatus(
 						'Unable to load saved templates. Check the database connection.',
@@ -1641,6 +1746,24 @@
 				} catch (error) {
 					setTemplateStatus('Unable to load template.', 'is-error');
 				}
+			}
+
+			function filterTemplates(searchTerm) {
+				if (!searchTerm.trim()) {
+					renderTemplateList(allTemplates, false);
+					return;
+				}
+				const lowerSearch = searchTerm.toLowerCase();
+				const filtered = allTemplates.filter((template) =>
+					template.name.toLowerCase().includes(lowerSearch)
+				);
+				renderTemplateList(filtered, true);
+			}
+
+			if (templateSearchInput) {
+				templateSearchInput.addEventListener('input', (event) => {
+					filterTemplates(event.target.value);
+				});
 			}
 
 			// Custom confirm modal for delete
@@ -2087,6 +2210,21 @@
 				const next = isDark ? 'dark' : 'light';
 				localStorage.setItem(THEME_KEY, next);
 				applyTheme(next);
+			});
+
+			// Insert tooltip item text into the corresponding input
+			document.querySelectorAll('.copyable-item').forEach((item) => {
+				item.addEventListener('click', (event) => {
+					event.stopPropagation();
+					const text = item.textContent.trim();
+					// Find the parent activity-input-wrapper and get the input
+					const wrapper = item.closest('.activity-input-wrapper');
+					const input = wrapper?.querySelector('.research-input');
+					if (input) {
+						input.value = text;
+						input.dispatchEvent(new Event('input', { bubbles: true }));
+					}
+				});
 			});
 		</script>
 	</body>
